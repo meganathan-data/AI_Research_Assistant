@@ -2,7 +2,7 @@
 Relu Consultancy - AI & Automation Developer Hiring Hackathon
 Main Python Application & Web Server.
 Serves a sleek, minimalistic dark-theme Web UI with vibrant cyan/sky-blue accents (#38bdf8 / #0284c7).
-Vercel Serverless Python & local HTTP server compatibility.
+Supports Vercel Serverless Python routing (/api/index rewrite handling) and local execution.
 """
 
 import json
@@ -55,28 +55,33 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        if self.path in ["/", "/index.html"]:
+        clean_path = self.path.split('?')[0].rstrip('/')
+        if not clean_path or clean_path in ["", "/", "/index.html", "/api/index", "/index"]:
             html_content = get_web_ui_html()
             self.send_bytes(html_content.encode("utf-8"), "text/html; charset=utf-8")
-        elif self.path == "/api/health":
+        elif clean_path == "/api/health":
             self.send_json({"status": "ok", "app": "Relu AI Research Assistant"})
         else:
-            self.send_json({"error": "Not Found"}, 404)
+            # Fallback to Web UI HTML for single page app
+            html_content = get_web_ui_html()
+            self.send_bytes(html_content.encode("utf-8"), "text/html; charset=utf-8")
 
     def do_POST(self):
         content_length = int(self.headers.get("Content-Length", 0))
-        post_body = self.rfile.read(content_length).decode("utf-8")
+        post_body = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else ""
         
         try:
             req_data: dict[str, Any] = json.loads(post_body) if post_body else {}
         except Exception:
             req_data = {}
 
-        if self.path == "/api/research":
+        clean_path = self.path.split('?')[0].rstrip('/')
+
+        if clean_path.endswith("/api/research") or "research" in clean_path:
             self.handle_research_api(req_data)
-        elif self.path == "/api/download-pdf":
+        elif clean_path.endswith("/api/download-pdf") or "download-pdf" in clean_path:
             self.handle_pdf_download_api(req_data)
-        elif self.path == "/api/discord":
+        elif clean_path.endswith("/api/discord") or "discord" in clean_path:
             self.handle_discord_api(req_data)
         else:
             self.send_json({"error": "Endpoint not found"}, 404)
