@@ -2,7 +2,7 @@
 Relu Consultancy - AI & Automation Developer Hiring Hackathon
 Main Python Application & Web Server.
 Serves a sleek, minimalistic dark-theme Web UI with vibrant cyan/sky-blue accents (#38bdf8 / #0284c7).
-Compatible with Vercel Serverless Python (@vercel/python) and local HTTP server execution.
+Vercel Serverless Python & local HTTP server compatibility.
 """
 
 import json
@@ -20,7 +20,7 @@ from discord_bot import send_report_to_discord
 
 PORT = 8000
 
-class ReluRequestHandler(BaseHTTPRequestHandler):
+class handler(BaseHTTPRequestHandler):
     """HTTP Request Handler providing REST API endpoints and Web UI serving."""
     
     def log_message(self, format, *args):
@@ -176,8 +176,8 @@ class ReluRequestHandler(BaseHTTPRequestHandler):
         else:
             self.send_json(res_dict, 500)
 
-# Vercel Entrypoint Handler Alias
-handler = ReluRequestHandler
+# Alias for backwards compatibility
+ReluRequestHandler = handler
 
 def get_web_ui_html() -> str:
     """Returns the single-page ChatGPT minimalist dark mode web UI with Cyan/Sky-Blue styling and OpenRouter AI Model Selector."""
@@ -1039,7 +1039,7 @@ if __name__ == "__main__":
     print(f"Starting server on http://localhost:{PORT}...")
     print(f"============================================================")
     
-    server = HTTPServer(("0.0.0.0", PORT), ReluRequestHandler)
+    server = HTTPServer(("0.0.0.0", PORT), handler)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
