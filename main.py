@@ -2,7 +2,7 @@
 Relu Consultancy - AI & Automation Developer Hiring Hackathon
 Main Python Application & Web Server.
 Serves a sleek, minimalistic dark-theme Web UI with vibrant cyan/sky-blue accents (#38bdf8 / #0284c7).
-Features OpenRouter AI Model Selector (Gemini 2.0 Flash, Llama 3.3 70B, GPT-4o Mini, DeepSeek, Claude 3.5, or Custom Slug).
+Compatible with Vercel Serverless Python (@vercel/python) and local HTTP server execution.
 """
 
 import json
@@ -176,6 +176,8 @@ class ReluRequestHandler(BaseHTTPRequestHandler):
         else:
             self.send_json(res_dict, 500)
 
+# Vercel Entrypoint Handler Alias
+handler = ReluRequestHandler
 
 def get_web_ui_html() -> str:
     """Returns the single-page ChatGPT minimalist dark mode web UI with Cyan/Sky-Blue styling and OpenRouter AI Model Selector."""
