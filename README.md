@@ -67,11 +67,11 @@ python main.py
 
 ## Environment Variables (`.env.local`)
 
-| Variable | Description | Default / Note |
-|---|---|---|
-| `GOOGLE_API_KEY` | Google Gemini API Key | Preconfigured with provided key |
-| `SERPER_API_KEY` | Serper.dev Search API Key | Optional (Fallback web search included) |
-| `OPENROUTER_API_KEY` | OpenRouter API Key | Optional (Supports model selection) |
+| Environment Variable | Service | Description |
+| :--- | :--- | :--- |
+| `OPENROUTER_API_KEY` | OpenRouter AI API Key | Entered directly in UI or set via env var |
+| `SERPER_API_KEY` | Serper.dev Search API Key | Optional (Entered directly in UI or set via env var) |
+| `GOOGLE_API_KEY` | Google Gemini API Key | Optional fallback |
 
 ---
 
