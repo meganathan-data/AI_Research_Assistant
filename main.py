@@ -2,7 +2,7 @@
 Relu Consultancy - AI & Automation Developer Hiring Hackathon
 Main Python Application & Web Server.
 Serves a sleek, minimalistic dark-theme Web UI with vibrant cyan/sky-blue accents (#38bdf8 / #0284c7).
-Supports Vercel Serverless Python routing (/api/index rewrite handling) and local execution.
+Features resilient Vercel Serverless POST dispatching based on request body payload inspection.
 """
 
 import json
@@ -62,7 +62,6 @@ class handler(BaseHTTPRequestHandler):
         elif clean_path == "/api/health":
             self.send_json({"status": "ok", "app": "Relu AI Research Assistant"})
         else:
-            # Fallback to Web UI HTML for single page app
             html_content = get_web_ui_html()
             self.send_bytes(html_content.encode("utf-8"), "text/html; charset=utf-8")
 
@@ -75,14 +74,14 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             req_data = {}
 
-        clean_path = self.path.split('?')[0].rstrip('/')
+        path_str = f"{self.path} {self.headers.get('x-matched-path', '')} {self.headers.get('x-forwarded-uri', '')} {req_data.get('endpoint', '')}".lower()
 
-        if clean_path.endswith("/api/research") or "research" in clean_path:
-            self.handle_research_api(req_data)
-        elif clean_path.endswith("/api/download-pdf") or "download-pdf" in clean_path:
-            self.handle_pdf_download_api(req_data)
-        elif clean_path.endswith("/api/discord") or "discord" in clean_path:
+        if "discord" in path_str or "bot_token" in req_data:
             self.handle_discord_api(req_data)
+        elif "download-pdf" in path_str or ("report" in req_data and "input" not in req_data):
+            self.handle_pdf_download_api(req_data)
+        elif "research" in path_str or "input" in req_data:
+            self.handle_research_api(req_data)
         else:
             self.send_json({"error": "Endpoint not found"}, 404)
 
@@ -181,7 +180,6 @@ class handler(BaseHTTPRequestHandler):
         else:
             self.send_json(res_dict, 500)
 
-# Alias for backwards compatibility
 ReluRequestHandler = handler
 
 def get_web_ui_html() -> str:
@@ -744,6 +742,7 @@ def get_web_ui_html() -> str:
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            endpoint: 'research',
             input: inputVal,
             serper_key: (document.getElementById('serper-key').value || localStorage.getItem('serper_key') || '').trim(),
             openrouter_key: openrouterKey,
@@ -977,7 +976,7 @@ def get_web_ui_html() -> str:
         const res = await fetch('/api/download-pdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ report: currentReportData })
+          body: JSON.stringify({ endpoint: 'download-pdf', report: currentReportData })
         });
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
@@ -1011,6 +1010,7 @@ def get_web_ui_html() -> str:
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            endpoint: 'discord',
             bot_token: token,
             channel_id: channel,
             applicant_name: name,
